@@ -10,5 +10,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 246fe92e5aafb5840b0ff80511d453d8, type: 3}
-  m_Name: Fire1PressedEvent
+  m_Name: Fire1DownEvent
   m_EditorClassIdentifier: 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
 {
     
@@ -11,7 +11,9 @@ public class PlayerMovement : MonoBehaviour
         public float speed = 5.0f;
         public float acceleration = 3.0f;
         public Vector3 velocity;
-        public CharacterController controller;
+        public Rigidbody rigidbody;
+        public bool isGrounded;
+        public bool airJumped = false;
     }
 
     [System.Serializable]
@@ -32,14 +34,19 @@ public class PlayerMovement : MonoBehaviour
 
     public Vector2Variable movementInput;
     public Vector2Variable mouseInput;
+    public BoolVariable jumpButtonInput;
 
     void Start() {
-        movement.controller = GetComponent<CharacterController>();
+        movement.rigidbody = GetComponent<Rigidbody>();
     }
 
     void Update() {
-        Locomotion();
         Turning();
+    }
+
+    void FixedUpdate() {
+        Locomotion();
+        VerticalMovement();
     }
 
     public void AddRecoil(float r) {
@@ -47,12 +54,26 @@ public class PlayerMovement : MonoBehaviour
         turningAndAiming.recoilY -= r;
     }
 
+    public void Jump(float jumpForce) {
+        if(movement.isGrounded || movement.airJumped) {
+            Vector3 lateralizedVelocity = movement.rigidbody.velocity;
+            lateralizedVelocity.y = 0f;
+            movement.rigidbody.velocity = lateralizedVelocity;
+            movement.rigidbody.AddForce(Vector3.up * jumpForce);
+        }
+    }
 
     void Locomotion() {
         Vector3 targetVelocity = 
-        (movementInput.x * transform.right + movementInput.y * transform.forward) * movement.speed * Time.deltaTime;
-        movement.velocity = Vector3.Lerp(movement.velocity, targetVelocity, movement.acceleration * Time.deltaTime);
-        movement.controller.Move(movement.velocity);
+        (movementInput.x * transform.right + movementInput.y * transform.forward) * movement.speed * Time.fixedDeltaTime;
+        movement.velocity = Vector3.Lerp(movement.velocity, targetVelocity, movement.acceleration * Time.fixedDeltaTime);
+        movement.velocity.y = movement.rigidbody.velocity.y;
+        movement.rigidbody.velocity = movement.velocity;
+        //movement.controller.Move(movement.velocity);
+    }
+
+    void VerticalMovement() {
+
     }
 
     void Turning() {
@@ -77,6 +98,23 @@ public class PlayerMovement : MonoBehaviour
         //Recoil
         turningAndAiming.recoilY = Mathf.Lerp(turningAndAiming.recoilY, 0f, Time.deltaTime * 2.0f);
 
+    }
+
+    //Collisions
+
+    void OnCollisionEnter(Collision collision) {
+        if (collision.gameObject.tag == ("Ground"))
+        {
+            movement.isGrounded = true;
+            movement.airJumped = true;
+        }
+    }
+
+    void OnCollisionExit(Collision collision) {
+        if (collision.gameObject.tag == ("Ground"))
+        {
+            movement.isGrounded = false;
+        }
     }
 
 }

@@ -22,7 +22,6 @@ public class PathfindingRaiseEventOnClosestNodeChanged : MonoBehaviour
         if(timer < 0) {
             Node newClosest = manager.ClosestNodeToPoint(transform.position);
             if(newClosest != closestNode) {
-                Debug.Log("Update!");
                 eventToRaise.Raise();
                 closestNode = newClosest;
             }
